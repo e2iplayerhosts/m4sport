@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2019-05-23 by Alec - M4 SPORT
+# 2019-05-24 by Alec - M4 SPORT
 ###################################################
-HOST_VERSION = "1.0"
+HOST_VERSION = "1.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -60,6 +60,7 @@ class m4sport(CBaseHostClass):
         self.ICON_URL_FOCI = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz49Py0/O1CvISwcA66gTcw=='))
         self.aid = config.plugins.iptvplayer.m4sport_id.value
         self.aid_ki = ''
+        self.eblf = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y8vL9fLNSkuyC8q0cso1U9KzMrLz87PzslMT8xKBAAIlg4p'))
         self.defaultParams = {'header':self.HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
         
     def getFullIconUrl(self, url):
@@ -94,6 +95,12 @@ class m4sport(CBaseHostClass):
             else:
                 self.aid_ki = ''
             msg_foci = self.aid_ki + 'Magyar Foci adásainak megjelenítése...'
+            n_fbl = self.malvadst('1', '11', 'm4_blfoci')
+            if n_fbl != '' and self.aid:
+                self.aid_ki = 'ID: ' + n_fbl + '\n'
+            else:
+                self.aid_ki = ''
+            msg_blfoci = self.aid_ki + 'UEFA Bajnokok Ligája adásainak megjelenítése...\n\n(Előfordulhat, hogy egyes műsorokat nem lehet lejátszani a tartalom védelme miatt! - "Nincs elérhető link." üzenet jelenik meg)'
             n_sh = self.malvadst('1', '11', 'm4_sporthirek')
             if n_sh != '' and self.aid:
                 self.aid_ki = 'ID: ' + n_sh + '\n'
@@ -126,6 +133,7 @@ class m4sport(CBaseHostClass):
             msg_elo = self.aid_ki + 'M4 élőadásának megjelenítése...'
             MAIN_CAT_TAB = [{'category': 'list_main', 'title': 'BOXUTCA', 'tab_id': 'boxutca', 'desc': msg_boxutca, 'icon':self.DEFAULT_ICON_URL},
                             {'category': 'list_main', 'title': 'MAGYAR FOCI', 'tab_id': 'foci', 'desc': msg_foci, 'icon':self.ICON_URL_FOCI},
+                            {'category': 'list_main', 'title': 'UEFA BAJNOKOK LIGÁJA FOCI', 'tab_id': 'blfoci', 'desc': msg_blfoci, 'icon':self.ICON_URL_FOCI},
                             {'category': 'list_main', 'title': 'SPORTHÍREK', 'tab_id': 'sporthirek', 'desc': msg_sporthirek, 'icon':self.DEFAULT_ICON_URL},
                             {'category': 'list_main', 'title': 'SPORTKÖZVETÍTÉSEK', 'tab_id': 'kozvetitesek', 'desc': msg_kozvetitesek, 'icon':self.DEFAULT_ICON_URL},
                             {'category': 'search', 'title': 'Keresés', 'search_item': True, 'tab_id': 'kereses', 'desc': msg_kereses, 'icon':self.DEFAULT_ICON_URL },
@@ -142,45 +150,82 @@ class m4sport(CBaseHostClass):
             printExc()
             
     def listMainItems(self, cItem):
-        mig = 4
         try:
             tabID = cItem.get('tab_id', '')
             if tabID == 'boxutca':
                 self.susn('2', '11', 'm4_boxutca')
-                cid = '548'
-                bid = '4'
+                self.dfml('548','4',4)
             elif tabID == 'foci':
                 self.susn('2', '11', 'm4_foci')
-                cid = '768'
-                bid = '4'
+                self.dfml('768','4',4)
+            elif tabID == 'blfoci':
+                self.susn('2', '11', 'm4_blfoci')
+                self.dfbl(self.eblf)
             elif tabID == 'sporthirek':
                 self.susn('2', '11', 'm4_sporthirek')
-                cid = '1020'
-                bid = '4'
+                self.dfml('1020','4',4)
             elif tabID == 'kozvetitesek':
                 self.susn('2', '11', 'm4_kozvetitesek')
-                cid = '1025'
-                bid = '4'
-                mig = 7
-            params = dict(self.defaultParams)
-            params['header'] = dict(self.AJAX_HEADER)
-            pue = zlib.decompress(base64.b64decode('eJw1yTEOwyAMQNHbZCteOlWKOvQIPQAiwQIqwBaYOlHVu7cL09fXiyLcbwCqasq1MzUxcYDyZacqWAU4j5BqB8GM040mH1A6zFbU59geTjBQO8G93GEzOV+ooeHI992JTX79fBemLlZOxvWdPNKyZQqTXEBbR9mw/fcHOtA8OQ=='))
-            for x in range(1, mig):
-                puf = pue.format(cid,bid,str(x))
-                sts, data = self.getPage(puf, params)
+                self.dfml('1025','4',7)
+        except Exception:
+            printExc()
+            
+    def dfml(self, cid='', bid='', mig=0):
+        try:
+            if cid != '' and bid != '' and mig > 0:
+                params = dict(self.defaultParams)
+                params['header'] = dict(self.AJAX_HEADER)
+                pue = zlib.decompress(base64.b64decode('eJw1yTEOwyAMQNHbZCteOlWKOvQIPQAiwQIqwBaYOlHVu7cL09fXiyLcbwCqasq1MzUxcYDyZacqWAU4j5BqB8GM040mH1A6zFbU59geTjBQO8G93GEzOV+ooeHI992JTX79fBemLlZOxvWdPNKyZQqTXEBbR9mw/fcHOtA8OQ=='))
+                for x in range(1, mig):
+                    puf = pue.format(cid,bid,str(x))
+                    sts, data = self.getPage(puf, params)
+                    if not sts: return
+                    if len(data) == 0: return
+                    data = json_loads(data)
+                    for item in data:
+                        title = item['title']
+                        date_str = item['date'][0:10].replace('.','/').strip()
+                        url = item['link']
+                        rstr = 'video/' + date_str + '/' 
+                        url2 = url.replace('videok//',rstr)
+                        desc = item['date'] + '-i adás\n\nA műsor tartalma:\n' + title
+                        icon = item['image']
+                        params = {'title':title, 'url':url, 'url2':url2, 'desc':desc, 'icon':icon, 'md': 'egyeb'}
+                        self.addVideo(params)
+        except Exception:
+            printExc()
+            
+    def dfbl(self, pu=''):
+        ln = 0
+        try:
+            if pu != '':
+                sts, data = self.getPage(pu)
                 if not sts: return
                 if len(data) == 0: return
-                data = json_loads(data)
+                tn = self.cm.ph.getDataBeetwenMarkers(data, '<h2 style="color: ;">Videók', '<div class="pagination" id="pagination', False)[1]
+                if len(tn) == 0: return
+                data = self.cm.ph.getAllItemsBeetwenMarkers(tn, '<div class="image-wrapper tizenhatkilenc overflow hmsLazyLoad', '<div class="typeico">')
+                if len(data) == 0: return
                 for item in data:
-                    title = item['title']
-                    date_str = item['date'][0:10].replace('.','/').strip()
-                    url = item['link']
-                    rstr = 'video/' + date_str + '/' 
-                    url2 = url.replace('videok//',rstr)
-                    desc = item['date'] + '-i adás\n\nA műsor tartalma:\n' + title
-                    icon = item['image']
-                    params = {'title':title, 'url':url, 'url2':url2, 'desc':desc, 'icon':icon, 'md': 'egyeb'}
+                    ln += 1
+                    icon = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''')[0]
+                    if icon.startswith('//'):
+                        icon = 'https:' + icon
+                    if not icon.startswith('https'): continue
+                    if not self.cm.isValidUrl(icon): continue
+                    tnt = self.cm.ph.getDataBeetwenMarkers(item, '<div class="cikk-content-title', '</h1>')[1]
+                    if len(tnt) == 0: continue
+                    url = self.cm.ph.getSearchGroups(tnt, 'href=[\'"]([^"^\']+?)[\'"]')[0]
+                    if url.startswith('//'):
+                        url = 'https:' + url
+                    if not url.startswith('https'): continue
+                    title_tmp = self.cm.ph.getDataBeetwenMarkers(tnt, 'href="', '/a>', False)[1]
+                    title = self.cm.ph.getDataBeetwenMarkers(title_tmp, '>', '<', False)[1].strip()
+                    if title == '': continue
+                    desc = 'A műsor tartalma:\n' + title
+                    params = {'title':title, 'url':url, 'url2':url, 'desc':desc, 'icon':icon, 'md': 'egyeb'}
                     self.addVideo(params)
+                    if ln > 30: break
         except Exception:
             printExc()
 
@@ -236,8 +281,7 @@ class m4sport(CBaseHostClass):
                 vl = vl.replace('\/','/')
                 if vl.startswith('/'):
                     vl = 'https:' + vl
-                if not self.cm.isValidUrl(vl):
-                    return ''
+                if not self.cm.isValidUrl(vl): return ''
                 if len(vl) != '':
                     bu = vl
         except Exception:
