@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2019-05-24 by Alec - M4 SPORT
+# 2019-05-30 by Alec - M4 SPORT
 ###################################################
-HOST_VERSION = "1.1"
+HOST_VERSION = "1.2"
 ###################################################
 # LOCAL import
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, MergeDicts
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVerstion, MergeDicts
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist, getF4MLinksWithMeta, getMPDLinksWithMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
@@ -58,6 +58,9 @@ class m4sport(CBaseHostClass):
         self.DEFAULT_ICON_URL = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz9cryEsHAI25EXM='))
         self.ICON_URL_ELO = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz49PzcnXK8hLBwDYJxMS'))
         self.ICON_URL_FOCI = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz49Py0/O1CvISwcA66gTcw=='))
+        self.vivn = GetIPTVPlayerVerstion()
+        self.porv = self.gits()
+        self.pbtp = '-'
         self.aid = config.plugins.iptvplayer.m4sport_id.value
         self.aid_ki = ''
         self.eblf = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y8vL9fLNSkuyC8q0cso1U9KzMrLz87PzslMT8xKBAAIlg4p'))
@@ -317,13 +320,32 @@ class m4sport(CBaseHostClass):
         
     def susn(self, i_md='', i_hgk='', i_mpu=''):
         uhe = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ'))
-        pstd = {'md':i_md, 'hgk':i_hgk, 'mpu':i_mpu }
+        pstd = {'md':i_md, 'hgk':i_hgk, 'mpu':i_mpu, 'hv':self.vivn, 'orv':self.porv, 'bts':self.pbtp}
         try:
             if i_md != '' and i_hgk != '' and i_mpu != '':
                 sts, data = self.cm.getPage(uhe, self.defaultParams, pstd)
             return
         except Exception:
             return
+            
+    def gits(self):
+        bv = '-'
+        tt = []
+        try:
+            if fileExists(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE'))):
+                fr = open(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE')),'r')
+                for ln in fr:
+                    ln = ln.rstrip('\n')
+                    if ln != '':
+                        tt.append(ln)
+                fr.close()
+                if len(tt) == 1:
+                    bv = tt[0].strip()[:-6].capitalize()
+                if len(tt) == 2:
+                    bv = tt[1].strip()[:-6].capitalize()
+            return bv
+        except:
+            return '-'
         
     def listSearchResult(self, cItem, searchPattern, searchType):
         try:
