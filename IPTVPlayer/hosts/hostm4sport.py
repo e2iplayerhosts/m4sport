@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2019-05-30 by Alec - M4 SPORT
+# 2019-06-09 by Alec - M4 SPORT
 ###################################################
-HOST_VERSION = "1.2"
+HOST_VERSION = "1.3"
 ###################################################
 # LOCAL import
 ###################################################
@@ -36,6 +36,8 @@ from Screens.MessageBox import MessageBox
 # Config options for HOST
 ###################################################
 config.plugins.iptvplayer.m4sport_id = ConfigYesNo(default = False)
+config.plugins.iptvplayer.boxtipus = ConfigText(default = "", fixed_size = False)
+config.plugins.iptvplayer.boxrendszer = ConfigText(default = "", fixed_size = False)
 
 def GetConfigList():
     optionList = []
@@ -61,6 +63,8 @@ class m4sport(CBaseHostClass):
         self.vivn = GetIPTVPlayerVerstion()
         self.porv = self.gits()
         self.pbtp = '-'
+        self.btps = config.plugins.iptvplayer.boxtipus.value
+        self.brdr = config.plugins.iptvplayer.boxrendszer.value
         self.aid = config.plugins.iptvplayer.m4sport_id.value
         self.aid_ki = ''
         self.eblf = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y8vL9fLNSkuyC8q0cso1U9KzMrLz87PzslMT8xKBAAIlg4p'))
@@ -86,6 +90,8 @@ class m4sport(CBaseHostClass):
         
     def listMainMenu(self, cItem):
         try:
+            if not self.ebbtit(): return
+            if self.btps != '' and self.brdr != '': self.pbtp = self.btps.strip() + ' - ' + self.brdr.strip()
             n_bx = self.malvadst('1', '11', 'm4_boxutca')
             if n_bx != '' and self.aid:
                 self.aid_ki = 'ID: ' + n_bx + '\n'
@@ -346,6 +352,17 @@ class m4sport(CBaseHostClass):
             return bv
         except:
             return '-'
+            
+    def ebbtit(self):
+        try:
+            if '' == self.btps.strip() or '' == self.brdr.strip():
+                msg = 'A Set-top-Box típusát és a használt rendszer (image) nevét egyszer meg kell adni!\n\nA kompatibilitás és a megfelelő használat miatt kellenek ezek az adatok a programnak.\nKérlek, a helyes működéshez a valóságnak megfelelően írd be azokat.\n\nA "HU Telepítő" keretrendszerben tudod ezt megtenni.\n\nKilépek és megyek azt beállítani?'
+                ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_YESNO, default=True)
+                return False
+            else:
+                return True
+        except Exception:
+            return False
         
     def listSearchResult(self, cItem, searchPattern, searchType):
         try:
